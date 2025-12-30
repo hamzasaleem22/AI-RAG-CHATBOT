@@ -56,6 +56,12 @@
                 <div class="chat-container">
                     <div id="chatMessages" class="chat-messages"></div>
                     <div class="chat-input-container">
+                        <button id="uploadButton">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
                         <input 
                             type="text" 
                             id="chatInput" 
@@ -74,6 +80,24 @@
         </div>
     </div>
 
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Choose an option</h2>
+            <button id="uploadFileButton">Upload a file</button>
+            <button id="takePhotoButton">Take a photo</button>
+        </div>
+    </div>
+
+    <div id="cameraModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Take a photo</h2>
+            <video id="cameraStream" autoplay></video>
+            <button id="captureButton">Capture</button>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js?v=9"></script>

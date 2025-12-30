@@ -1,16 +1,17 @@
 import warnings
 warnings.filterwarnings("ignore", message="resource_tracker: There appear to be.*")
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+import shutil
 
-from config import config
-from rag_system import RAGSystem
+from .config import config
+from .rag_system import RAGSystem
 
 # Initialize FastAPI app
 app = FastAPI(title="Course Materials RAG System", root_path="")
@@ -52,6 +53,24 @@ class CourseStats(BaseModel):
     course_titles: List[str]
 
 # API Endpoints
+
+@app.post("/api/upload")
+async def upload_document(file: UploadFile = File(...)):
+    """Upload a new document to the RAG system"""
+    docs_path = "../docs"
+    file_path = os.path.join(docs_path, file.filename)
+    
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        course, chunks = rag_system.add_course_document(file_path)
+        if course:
+            return {"filename": file.filename, "course_title": course.title, "chunks": chunks}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to process document")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest):

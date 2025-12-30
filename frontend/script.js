@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles;
+let chatMessages, chatInput, sendButton, uploadButton, totalCourses, courseTitles;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,13 +13,85 @@ document.addEventListener('DOMContentLoaded', () => {
     chatMessages = document.getElementById('chatMessages');
     chatInput = document.getElementById('chatInput');
     sendButton = document.getElementById('sendButton');
+    uploadButton = document.getElementById('uploadButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
     
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    const uploadModal = document.getElementById('uploadModal');
+    const closeModal = document.querySelector('.close-button');
+    const uploadFileButton = document.getElementById('uploadFileButton');
+    const takePhotoButton = document.getElementById('takePhotoButton');
+
+    uploadButton.addEventListener('click', () => {
+        uploadModal.style.display = 'block';
+    });
+
+    closeModal.addEventListener('click', () => {
+        uploadModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target == uploadModal) {
+            uploadModal.style.display = 'none';
+        }
+    });
+
+    uploadFileButton.addEventListener('click', () => {
+        uploadModal.style.display = 'none';
+        fileInput.click();
+    });
+
+    takePhotoButton.addEventListener('click', () => {
+        uploadModal.style.display = 'none';
+        console.log('Take photo clicked');
+        // Later, we will implement the camera functionality here
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            uploadFile(file);
+        }
+    });
+
     setupEventListeners();
     createNewSession();
     loadCourseStats();
 });
+
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const loadingMessage = addMessage(`Uploading "${file.name}"...`, 'assistant');
+
+    try {
+        const response = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'File upload failed');
+        }
+
+        const data = await response.json();
+        // remove the loading message
+        document.getElementById(loadingMessage).remove();
+        addMessage(`File "${data.filename}" uploaded successfully. It is now available for queries.`, 'assistant');
+    } catch (error) {
+        // remove the loading message
+        document.getElementById(loadingMessage).remove();
+        addMessage(`Error uploading file: ${error.message}`, 'assistant');
+    }
+}
+
 
 // Event Listeners
 function setupEventListeners() {
